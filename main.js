@@ -25,7 +25,14 @@ function readFileToArray(filepath) {
     readFile(filepath, cb);
     });
 }
-function createWindow (ids) {
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+
+
+function createWindow () {
+
   // one load
   mainWindow = new BrowserWindow({width: 1080, height: 860, darkTheme: true, resizable: false,
     webPreferences: {
@@ -40,29 +47,32 @@ function createWindow (ids) {
     if (error) console.error(error)
   })
 
-  console.log(ids[3]);  
-  mainWindow.loadURL("http://vk.com/audios" + ids[3]);
-
   // mainWindow.setMenu(null)
-
   mainWindow.on('closed', function () {
     mainWindow = null
   })
+
+  /////////////////////////////////////////////////////////////
+  readFileToArray('./ids.txt').then( ids => {
+    for (var i = 0; i < ids.length; i++) {
+      console.log(ids[i]);
+      mainWindow.loadURL("http://vk.com/audios" + ids[i]);
+      await sleep(5000);
+    }
+  });
+  /////////////////////////////////////////////////////////////
 }
 
 
 
-readFileToArray('./ids.txt').then( ids => {
-
-  app.on('ready', createWindow);
-  app.on('window-all-closed', function () {
-    if (process.platform !== 'darwin') {
-      app.quit()
-    }
-  })
-  app.on('activate', function () {
-    if (mainWindow === null) {
-      createWindow(ids)
-    }
-  })
-});
+app.on('ready', createWindow);
+app.on('window-all-closed', function () {
+  if (process.platform !== 'darwin') {
+    app.quit()
+  }
+})
+app.on('activate', function () {
+  if (mainWindow === null) {
+    createWindow()
+  }
+})

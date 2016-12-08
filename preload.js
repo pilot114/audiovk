@@ -6,6 +6,15 @@ document.addEventListener("DOMNodeInserted", function(event) {
 
 window.onload = function() {
 	console.clear();
+	console.log("START PRELOAD");
+
+	// crunch for denied audios (its my audios)
+	var el = $($(".audio_row")[0]);
+	var duration = el.find('div.audio_duration').text();
+	if (duration == "3:09:38") {
+		console.log("DENIED");
+		return;
+	}
 
 	var audiosData = [];
 	var scrollInterval = 300;
@@ -27,7 +36,8 @@ window.onload = function() {
 				var name     = el.find('span.audio_title_inner').text();
 				var artist   = el.find('a.audio_performer').text();
 				var duration = el.find('div.audio_duration').text();
-				audiosData.push([ name, artist, duration ]);
+				var audio = [ name, artist, duration ];
+				audiosData.push(audio);
 			}
 		}
 		prevWh = newWh;
