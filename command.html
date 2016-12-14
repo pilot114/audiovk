@@ -1,9 +1,122 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Settings</title>
+	<title>AudioVk 0.1</title>
+	<link href="./vendor/bootstrap/dist/css/bootstrap.min.css" type="text/css" rel="stylesheet">
+	<script src="./vendor/jquery/dist/jquery.min.js"></script>
+    <script src="./vendor/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+    const {ipcRenderer} = require('electron')
+
+    $( document ).ready(function() {
+
+    	$('#parse').click(function(e){
+			var f = $('#ids_parse').prop('files')[0];
+    		if (f) {
+		      var r = new FileReader();
+		      r.onload = function(ev) {
+			      var contents = ev.target.result;
+		      }
+		      r.readAsText(f);
+		      // send ids
+		      r.onload = function(event) {
+				  ipcRenderer.sendSync('parse_run', event.target.result)
+			  };
+		      console.log(r.result);
+		    } else {
+		      alert("Failed to load file");
+		    }
+    	});
+
+    	$('#search').click(function(){
+    		var args = {};
+			var f = $('#ids_search').prop('files')[0];
+    		if (f) {
+		      var r = new FileReader();
+		      r.onload = function(ev) {
+			      var contents = ev.target.result;
+		      }
+		      r.readAsText(f);
+		    } else {
+		      alert("Failed to load file");
+		    }
+    		ipcRenderer.sendSync('search_run', args)
+    	});
+	});
+    </script>
 </head>
 <body>
-<h1>qwe</h1>
+
+<h1>Парсинг аудио</h1>
+<div class="col-md-6">
+	<div class="form-group">
+	<input type="file" name="ids" id="ids_parse">
+	</div>
+	
+	<div class="form-group">
+	<button class="btn btn-default" id="parse">Поехали</button>
+	</div>
+</div>
+
+
+<h1>Поиск пользователей в базе</h1>
+<div class="col-md-6">
+	
+	<input type="hidden" name="task" value="task">
+
+	<p>Если не указать ID, будет искать по всей базе</p>
+	<div class="form-group">
+		<input type="file" name="uids" title="UIDS" id="ids_search">
+	</div>
+
+	<h2>Ключевая фраза</h2>
+	<div class="form-group">
+		<textarea name="phrases" class="form-control" placeholder="По одной ключевой фразе в строке" rows="5"></textarea>
+	</div>
+
+	<h2>Параметры поиска</h2>
+	<p>Искать по</p>
+	<div class="radio">
+	  <label>
+	    <input type="radio" name="type_search" value="1" checked>
+	    Исполнители
+	  </label>
+	</div>
+	<div class="radio">
+	  <label>
+	    <input type="radio" name="type_search" value="2">
+	    Композиции
+	  </label>
+	</div>
+
+	<div class="checkbox">
+	<label>
+	  <input name="accord" type="checkbox"> Точное вхождение поисковой фразы
+	</label>
+	</div>
+
+	<p>Длительность (в секундах)</p>
+	<div class="form-inline">
+	<div class="form-group">
+		<div class="col-sm-6">
+		  <input type="number" name="duration_min" class="form-control" placeholder="От">
+		</div>
+	</div>
+	<div class="form-group">
+		<div class="col-sm-6">
+		  <input type="number" name="duration_max" class="form-control" placeholder="До">
+		</div>
+	</div>
+	</div>
+
+	<p>Минимальное количество совпадений (согласно условию)</p>
+	<div class="form-group">
+		  <input type="number" name="matches" class="form-control" value="1">
+	</div>
+
+	<button class="btn btn-default" id="search">Отправить</button>
+	<div class="result"></div>
+</div>
+</div>
 </body>
 </html>
