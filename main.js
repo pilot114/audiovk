@@ -49,7 +49,7 @@ function createParseWindow(contentScript, ids) {
     },
   });
   const {session} = require('electron')
-  const cookie = {url: 'http://vk.com', name: 'remixsid', value: config.user.remixsid}
+  const cookie = {url: 'https://vk.com', name: 'remixsid', value: config.user.remixsid}
   session.defaultSession.cookies.set(cookie, (error) => {
     if (error) console.error(error)
   })
