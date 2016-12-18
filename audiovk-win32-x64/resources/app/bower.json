@@ -1,8 +1,0 @@
-{
-    "name": "audiovk",
-    "dependencies": {
-        "bootstrap": "3.3.*",
-        "jquery": "2.1.*",
-        "bootstrap-file-input": "1.*"
-    }
-}
