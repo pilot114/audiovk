@@ -7,7 +7,8 @@ const url = require('url')
 const fs = require('fs')
 var MongoClient = require('mongodb').MongoClient
 var assert = require('assert');
-
+var yaml_config = require('node-yaml-config');
+var config = yaml_config.load(__dirname + '/config.yml');
 
 const {ipcMain} = require('electron')
 
@@ -48,12 +49,12 @@ function createParseWindow(contentScript, ids) {
     },
   });
   const {session} = require('electron')
-  const cookie = {url: 'http://vk.com', name: 'remixsid', value: 'f4bd3310154381b8b381adf1458bfb390a80a14448fbf9e3ec531'}
+  const cookie = {url: 'http://vk.com', name: 'remixsid', value: config.user.remixsid}
   session.defaultSession.cookies.set(cookie, (error) => {
     if (error) console.error(error)
   })
 
-  // mainWindow.setMenu(null)
+  mainWindow.setMenu(null)
   mainWindow.on('closed', function () {
     mainWindow = null
   })
@@ -63,7 +64,7 @@ function createParseWindow(contentScript, ids) {
   var gen = nextIdGen(ids);
 
   var id = gen.next().value;
-  console.log("load page: " + "http://vk.com/audios" + id + '#' + id);
+  // console.log("load page: " + "http://vk.com/audios" + id + '#' + id);
   mainWindow.loadURL("http://vk.com/audios" + id + '#' + id);
   mainWindow.webContents.executeJavaScript(contentScript);
   /////////////////////////////////////////////////////////////
@@ -79,15 +80,13 @@ function createCommandWindow(){
       preload: path.resolve(path.join(__dirname, './preload.js'))
     },
   });
-  // commandWindow.setMenu(null);
+  // commandWindow.setMenu(null)
   commandWindow.loadURL(`file://${__dirname}/command.html`)
   commandWindow.on('closed', function () {
     commandWindow = null
   })
 }
 
-
-var conUrl = 'mongodb://172.24.0.121:27017/parse';
 
 var insertDocumentWithUpdate = function(db, cb, doc) {
   var collection = db.collection('audios');
@@ -99,30 +98,30 @@ var insertDocumentWithUpdate = function(db, cb, doc) {
 }
 
 ipcMain.on('parse_result', (event, data) => {
-  MongoClient.connect(conUrl, function(err, db) {
+  MongoClient.connect(config.db.connect, function(err, db) {
     assert.equal(null, err);
-    console.log("Connected successfully to server");
+    // console.log("Connected successfully to server");
 
     readFile('./exec.js', function(contentScript){
 
     // access denied
     if (data[0] == "error") {
+      console.log("#"+data[0]+": ACCESS DENIED")
       var id = gen.next().value;
-      console.log("load page: " + "http://vk.com/audios" + id + '#' + id);
+      // console.log("load page: " + "http://vk.com/audios" + id + '#' + id);
       mainWindow.loadURL("http://vk.com/audios" + id + '#' + id);
       mainWindow.webContents.executeJavaScript(contentScript);
     } else {
-      console.log("Parsed user with ID: " + data[0])
-      console.log("Audios count: " + data.slice(1).length)
+      console.log("#"+data[0]+" audios count: " + data.slice(1).length)
       var doc = {
         'uid' : data[0],
         'audios' : data.slice(1)
       };
 
       insertDocumentWithUpdate(db, function() {
-        console.log('success update!');
+        // console.log('success update!');
         var id = gen.next().value;
-        console.log("load page: " + "http://vk.com/audios" + id + '#' + id);
+        // console.log("load page: " + "http://vk.com/audios" + id + '#' + id);
         mainWindow.loadURL("http://vk.com/audios" + id + '#' + id);
         mainWindow.webContents.executeJavaScript(contentScript);
       }, doc);
@@ -137,7 +136,7 @@ ipcMain.on('parse_result', (event, data) => {
 var gen = null;
 
 ipcMain.on('parse_run', (event, data) => {
-  MongoClient.connect(conUrl, function(err, db) {
+  MongoClient.connect(config.db.connect, function(err, db) {
     assert.equal(null, err);
 
     var arrayIds = data.match(/[^\r\n]+/g);
@@ -153,9 +152,30 @@ ipcMain.on('parse_run', (event, data) => {
 });
 
 ipcMain.on('search_run', (event, data) => {
-  MongoClient.connect(conUrl, function(err, db) {
+  var accord = data.accord || false;
+  //  strict
+  if (accord) {
+
+  } else {
+
+  }
+  // type search: 1-artist 2-title
+  // accord: 'on',
+  // duration_max: '',
+  // duration_min: '',
+  // matches: '1',
+  // phrases: '',
+  // type_search: '2'
+  console.log(data);
+  MongoClient.connect(config.db.connect, function(err, db) {
     assert.equal(null, err);
     console.log("Connected successfully to server");
+
+    var query = 'db.audios.count()';
+    db.eval('function(){ return ' + query + '; }', function(err, result){
+      console.log(err);
+      console.log(result);
+    });
   });
 
   event.returnValue = 'ok'

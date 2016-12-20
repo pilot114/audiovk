@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>AudioVk</title>
+	<link href="./vendor/bootstrap/dist/css/bootstrap.min.css" type="text/css" rel="stylesheet">
+	<script src="./vendor/jquery/dist/jquery.min.js"></script>
+    <script src="./vendor/bootstrap/dist/js/bootstrap.min.js"></script>
+	<script src="./bower_components/bootstrap-file-input/bootstrap.file-input.js"></script>
+    <script type="text/javascript">
+    const {ipcRenderer} = require('electron')
+
+    $( document ).ready(function() {
+    	$('input[type=file]').bootstrapFileInput();
+		$('.file-inputs').bootstrapFileInput();
+
+    	$('#parse').click(function(e){
+			var f = $('#ids_parse').prop('files')[0];
+    		if (f) {
+		      var r = new FileReader();
+		      r.onload = function(ev) {
+			      var contents = ev.target.result;
+		      }
+		      r.readAsText(f);
+		      // send ids
+		      r.onload = function(event) {
+				  ipcRenderer.sendSync('parse_run', event.target.result)
+			  };
+		      console.log(r.result);
+		    } else {
+		      alert("Failed to load file");
+		    }
+    	});
+
+    	$('#search').click(function(){
+			var args = {};
+
+			var inputs = $(this).parent().find('input');
+			var textareas = $(this).parent().find('textarea');
+			$.each(textareas, function(i, v){
+				inputs.push( v );
+			});
+
+			var issetUids = false;
+
+			$.each(inputs, function(i, v){
+				var type = $(v).attr('type');
+				switch(type) {
+				  case 'file':
+				  	name = $(v).attr('name');
+					f = v.files[0];
+					if (f) {
+						issetUids = true;
+						var r = new FileReader();
+						r.onload = function(ev) {
+							var ids = ev.target.result;
+							args[name] = ids;
+							ipcRenderer.sendSync('search_run', args)
+						}
+						r.readAsText(f);
+					}
+				    break;
+				  case 'checkbox':
+				  	if (v.checked) {
+				  		name = $(v).attr('name');
+						val = $(v).val();
+						args[name] = val;
+				  	}
+				    break;
+				  case 'radio':
+				  	if (v.checked) {
+				  		name = $(v).attr('name');
+						val = $(v).val();
+						args[name] = val;
+				  	}
+				    break;
+				  default:
+					name = $(v).attr('name');
+					val = $(v).val();
+					args[name] = val;
+				    break;
+				}
+			});
+
+			if (!issetUids) {
+				ipcRenderer.sendSync('search_run', args);
+			}
+
+    	});
+	});
+    </script>
+</head>
+<body>
+<div class="container">
+<!-- NAVIGATION -->
+<ul class="nav nav-tabs" role="tablist">
+	<li class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">Парсинг аудио</a></li>
+	<li>			   <a href="#profile" aria-controls="profile" role="tab" data-toggle="tab">Поиск пользователей</a></li>
+</ul>
+<!-- CONTENT -->
+<div class="tab-content">
+
+	<!-- PARSE -->
+    <div role="tabpanel" class="tab-pane active" id="home">
+	    <div class="row">
+		<div class="col-md-6">
+			<div class="form-group">
+			    <input type="file" name="ids" id="ids_parse" title="IDS">
+			</div>
+			
+			<div class="form-group">
+			<button class="btn btn-default" id="parse">Поехали</button>
+			</div>
+		</div>
+		</div>
+    </div>
+	<!-- SEARCH -->
+    <div role="tabpanel" class="tab-pane" id="profile">
+	    <div class="row">
+    	<div class="col-md-6">
+			<p>Если не указать IDS, будет искать по всей базе</p>
+			<div class="form-group">
+				<input type="file" name="uids" id="ids_search" title="IDS">
+			</div>
+
+			<h2>Ключевая фраза</h2>
+			<div class="form-group">
+				<textarea name="phrases" class="form-control" placeholder="По одной ключевой фразе в строке" rows="5"></textarea>
+			</div>
+
+			<h2>Параметры поиска</h2>
+			<p>Искать по</p>
+			<div class="radio">
+			  <label>
+			    <input type="radio" name="type_search" value="1" checked>
+			    Исполнители
+			  </label>
+			  <label>
+			    <input type="radio" name="type_search" value="2">
+			    Композиции
+			  </label>
+			</div>
+
+			<div class="checkbox">
+			<label>
+			  <input name="accord" type="checkbox"> Точное вхождение поисковой фразы
+			</label>
+			</div>
+
+			<p>Длительность (в секундах)</p>
+			<div class="form-inline">
+			<div class="form-group">
+				<div class="col-sm-6">
+				  <input type="number" name="duration_min" class="form-control" placeholder="От">
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-6">
+				  <input type="number" name="duration_max" class="form-control" placeholder="До">
+				</div>
+			</div>
+			</div>
+
+			<p>Минимальное количество совпадений (согласно условию)</p>
+			<div class="form-group">
+				  <input type="number" name="matches" class="form-control" value="1">
+			</div>
+
+			<button class="btn btn-default" id="search">Отправить</button>
+			<div class="result"></div>
+		</div>
+		</div>
+    </div>
+</div>
+</div>
+</body>
+</html>

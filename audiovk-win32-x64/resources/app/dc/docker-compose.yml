@@ -1,0 +1,27 @@
+version: '2'
+
+services:
+    mongo:
+        build: mongo
+        ports:
+            - "27017:27017"
+        volumes:
+            - ./mongo/data:/data/db
+        networks:
+              mynet:
+                ipv4_address: 172.24.0.121
+    mongo_ui:
+        build: mongo_ui
+        ports:
+            - "3000:3000"
+        links:
+            - mongo
+        networks:
+              mynet:
+                ipv4_address: 172.24.0.122
+networks:
+  mynet:
+    driver: bridge
+    ipam:
+      config:
+      - subnet: 172.24.0.0/24

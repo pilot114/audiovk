@@ -7,10 +7,8 @@ var run = function() {
 
 	var id = window.location.hash.substring(1);
 
-	// crunch for denied audios (its my audios)
-	var el = $($(".audio_row")[0]);
-	var duration = el.find('div.audio_duration').text();
-	if (duration == "3:09:38") {
+	// access denied
+	if (window.location.pathname == '/audio') {
 		console.log("DENIED");
 		ipcRenderer.sendSync('parse_result', ["error"])
 		return;

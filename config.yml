@@ -1,0 +1,6 @@
+default:
+  user:
+    uid: 24578375
+    remixsid: f4bd3310154381b8b381adf1458bfb390a80a14448fbf9e3ec531
+  db:
+    connect: mongodb://172.24.0.121:27017/parse
