@@ -1,9 +1,10 @@
-const {ipcRenderer} = require('electron')
+const {ipcRenderer} = require('electron');
 
-// window.onload = function() {
 var run = function() {
 	console.clear();
 	console.log("START PRELOAD");
+
+	console.log(window.location);
 
 	var id = window.location.hash.substring(1);
 

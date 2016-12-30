@@ -2,16 +2,18 @@
 <html>
 <head>
 	<title>AudioVk</title>
-	<link href="./vendor/bootstrap/dist/css/bootstrap.min.css" type="text/css" rel="stylesheet">
-	<script src="./vendor/jquery/dist/jquery.min.js"></script>
-    <script src="./vendor/bootstrap/dist/js/bootstrap.min.js"></script>
-	<script src="./bower_components/bootstrap-file-input/bootstrap.file-input.js"></script>
+	<link  href="./bower_components/bootstrap/dist/css/bootstrap.min.css" type="text/css" rel="stylesheet">
     <script type="text/javascript">
     const {ipcRenderer} = require('electron')
 
-    $( document ).ready(function() {
+    window.addEventListener('load', () => {
     	$('input[type=file]').bootstrapFileInput();
 		$('.file-inputs').bootstrapFileInput();
+
+		// ipcRenderer.on('db_info', (event, data) => {
+		// 	alert(data);
+		// 	event.returnValue = 'ok';
+		// });
 
     	$('#parse').click(function(e){
 			var f = $('#ids_parse').prop('files')[0];
@@ -32,6 +34,12 @@
     	});
 
     	$('#search').click(function(){
+    		// run preloader
+    		$('div.result').empty();
+    		var preloader = $('<img id="dynamic">');
+			preloader.attr('src', './box.gif');
+			preloader.appendTo('div.result');
+
 			var args = {};
 
 			var inputs = $(this).parent().find('input');
@@ -46,16 +54,23 @@
 				var type = $(v).attr('type');
 				switch(type) {
 				  case 'file':
-				  	name = $(v).attr('name');
 					f = v.files[0];
 					if (f) {
 						issetUids = true;
 						var r = new FileReader();
 						r.onload = function(ev) {
 							var ids = ev.target.result;
-							args[name] = ids;
-							ipcRenderer.sendSync('search_run', args)
-						}
+							args['uids'] = ids;
+							var res = ipcRenderer.sendSync('search_run', args);
+							if (res) {
+								var text = "Найдено людей: " + res.length;
+								if (res.length != 0) {
+									// text += " Результат сохранён в файл result.xls";
+								}
+								// $('div.result').empty().text(text);
+								$('div.result').empty().text(JSON.stringify(res));
+							}
+				 		}
 						r.readAsText(f);
 					}
 				    break;
@@ -160,7 +175,7 @@
 			</div>
 			</div>
 
-			<p>Минимальное количество совпадений (согласно условию)</p>
+			<p>Минимальное количество совпадений</p>
 			<div class="form-group">
 				  <input type="number" name="matches" class="form-control" value="1">
 			</div>

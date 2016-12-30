@@ -2,6 +2,10 @@
 
 audio parser build onElectron + local dockerized mongo tools for save results
 
+# dependencies
+
+	npm install && bower install
+
 # build
 
 	electron-packager . audiovk --platform=win32 --arch=x64
