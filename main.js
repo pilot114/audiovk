@@ -61,7 +61,7 @@ function insertDocumentWithUpdate(db, cb, doc) {
 function createParseWindow(contentScript) {
 
   // one load
-  mainWindow = new BrowserWindow({width: 1080, height: 860, darkTheme: true, resizable: false,
+  mainWindow = new BrowserWindow({width: 1200, height: 860, darkTheme: true, resizable: false,
     webPreferences: {
       defaultEncoding: "utf-8",
       nodeIntegration: true,
@@ -69,6 +69,8 @@ function createParseWindow(contentScript) {
       preload: path.resolve(path.join(__dirname, './preload.js'))
     },
   });
+  // mainWindow.webContents.openDevTools();
+
   const {session} = require('electron')
   const cookie = {url: 'https://vk.com', name: 'remixsid', value: config.user.remixsid}
   session.defaultSession.cookies.set(cookie, (error) => {
@@ -91,7 +93,7 @@ function createParseWindow(contentScript) {
 
 // command interface
 function createCommandWindow(){
-  commandWindow = new BrowserWindow({width: 600, height: 800, darkTheme: true, resizable: false,
+  commandWindow = new BrowserWindow({width: 1000, height: 800, darkTheme: true, resizable: false,
     webPreferences: {
       defaultEncoding: "utf-8",
       nodeIntegration: true,
@@ -99,6 +101,8 @@ function createCommandWindow(){
       preload: path.resolve(path.join(__dirname, './preload.js'))
     },
   });
+  // commandWindow.webContents.openDevTools();
+  
   // commandWindow.setMenu(null)
   commandWindow.loadURL(`file://${__dirname}/command.html`)
   commandWindow.on('closed', function () {
