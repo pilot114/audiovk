@@ -65,10 +65,10 @@
 							if (res) {
 								var text = "Найдено людей: " + res.length;
 								if (res.length != 0) {
-									// text += " Результат сохранён в файл result.xls";
+									text += " Результат сохранён в файл result.csv";
 								}
-								// $('div.result').empty().text(text);
-								$('div.result').empty().text(JSON.stringify(res));
+								$('div.result').empty().text(text);
+								// $('div.result').empty().text(JSON.stringify(res));
 							}
 				 		}
 						r.readAsText(f);

@@ -1,5 +1,9 @@
 // DEP SECTION
 
+var csvWriter = require('csv-write-stream')
+var writer = csvWriter()
+
+
 const electron = require('electron')
 const app = electron.app
 const BrowserWindow = electron.BrowserWindow
@@ -183,6 +187,9 @@ ipcMain.on('search_run', (event, data) => {
     assert.equal(null, err);
     console.log("Connected successfully to server");
 
+    // limit on data of 16 Mb!
+    // TODO: batch query
+
     db.eval(query, data, {nolock:true}, function(err, result){
       if (err) {
         console.log(err.message);
@@ -191,26 +198,32 @@ ipcMain.on('search_run', (event, data) => {
         console.log(result.length);
         for (var i = 0; i < result.length; i++) {
           console.log("http://vk.com/id"+result[i].uid);
-          console.log(result[i].finded);
+          // console.log(result[i].finded);
         }
       }
-      event.returnValue = {
-        count: result.length,
-        uids: result.map(function(v){return v.uid;})
-      };
+
+      if (result) {
+        // to html page
+        event.returnValue = {
+          count: result.length,
+          uids: result.map(function(v){return v.uid;})
+        };
+
+        // save csv
+        var writer = csvWriter({sendHeaders: false})
+        writer.pipe(fs.createWriteStream('result.csv'))
+        for (var i = 0; i < result.length; i++) {
+          for (var j = 0; j < result[i].finded.length; j++) {
+            var audio = result[i].finded[j];
+            writer.write({"uid":result[i].uid, "title":audio[0], "artist":audio[1], "duration":audio[2]})
+          }
+        }
+        writer.end()
+      }
+
       console.log("Close connect to MongoDb");
       db.close();
-
-/*      var workbook = new Excel.Workbook();
-      var sheet = workbook.addWorksheet('audio_parser');
-      for (var i = 0; i < result.length; i++) {
-        sheet.addRow(result[i]).commit();
-      }
-      sheet.commit();
-
-      workbook.commit().xlsx.writeFile('./result.xls')
-      .then(function() { console.log("write result!"); });
-*/    });
+    });
   });
 
 });
