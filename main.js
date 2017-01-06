@@ -18,8 +18,6 @@ var config = yaml_config.load(__dirname + '/config.yml');
 
 const {ipcMain} = require('electron');
 
-var Excel = require('exceljs');
-
 let mainWindow
 let commandWindow
 
@@ -189,20 +187,22 @@ ipcMain.on('search_run', (event, data) => {
 
     // limit on data of 16 Mb!
     // TODO: batch query
+    // console.log(data);
 
     db.eval(query, data, {nolock:true}, function(err, result){
       if (err) {
         console.log(err.message);
       } else {
         // data return as JSON object
-        console.log(result.length);
+        console.log("FINDED UIDS: " + result.length);
         for (var i = 0; i < result.length; i++) {
-          console.log("http://vk.com/id"+result[i].uid);
+          // console.log("http://vk.com/id"+result[i].uid);
           // console.log(result[i].finded);
         }
       }
 
       if (result) {
+        console.log("send result to command.html...");
         // to html page
         event.returnValue = {
           count: result.length,
@@ -210,8 +210,9 @@ ipcMain.on('search_run', (event, data) => {
         };
 
         // save csv
+        console.log("save csv...");
         var writer = csvWriter({sendHeaders: false})
-        writer.pipe(fs.createWriteStream('result.csv'))
+        writer.pipe(fs.createWriteStream('./result/result.csv'))
         for (var i = 0; i < result.length; i++) {
           for (var j = 0; j < result[i].finded.length; j++) {
             var audio = result[i].finded[j];

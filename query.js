@@ -76,10 +76,13 @@ function (data) {
 				matches++;
 			}
 		}
-		doc.finded = finded;
 
 		if (matches >= data.matches) {
-			docs.push(doc);
+			var resDoc = {
+				'uid':    doc.uid,
+				'finded': finded	
+			};
+			docs.push(resDoc);
 		}
 	});
 
