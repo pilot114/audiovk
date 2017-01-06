@@ -185,8 +185,8 @@ ipcMain.on('search_run', (event, data) => {
     assert.equal(null, err);
     console.log("Connected successfully to server");
 
-    // limit on data of 16 Mb!
-    // TODO: batch query
+    // limit on data of 16 Mb
+    // MAYBE: batch query
     // console.log(data);
 
     db.eval(query, data, {nolock:true}, function(err, result){
@@ -204,10 +204,11 @@ ipcMain.on('search_run', (event, data) => {
       if (result) {
         console.log("send result to command.html...");
         // to html page
-        event.returnValue = {
+        var ret = {
           count: result.length,
           uids: result.map(function(v){return v.uid;})
         };
+        event.sender.send('search_run_res', ret)
 
         // save csv
         console.log("save csv...");

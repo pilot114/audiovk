@@ -19,6 +19,10 @@ function (data) {
 	var duration_max = data.duration_max || false;
 	var duration_min = data.duration_min || false;
 
+	if (!phrases) {
+		throw "Не задана фраза!";
+	}
+
 	// fuzzy search
 	if (!accord) {
 		phrases = phrases.map(function(phrase) {

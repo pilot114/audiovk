@@ -34,6 +34,12 @@
     	});
 
     	$('#search').click(function(){
+    		var phrasesCheck = $('textarea[name=phrases]').val();
+    		if (!phrasesCheck) {
+    			alert("Укажите фразы для поиска");
+    			return;
+    		}
+
     		// run preloader
     		$('div.result').empty();
     		var preloader = $('<img id="dynamic">');
@@ -50,6 +56,17 @@
 
 			var issetUids = false;
 
+			ipcRenderer.on('search_run_res', (event, res) => {
+				if (res) {
+					var text = "Найдено людей: " + res.count;
+					if (res.count != 0) {
+						text += " Результат сохранён в файл result.csv";
+					}
+					$('div.result').empty().html("<div class='alert alert-success'>"+text+"</div>");
+					// $('div.result').empty().text(JSON.stringify(res));
+				}
+			})
+
 			$.each(inputs, function(i, v){
 				var type = $(v).attr('type');
 				switch(type) {
@@ -61,15 +78,7 @@
 						r.onload = function(ev) {
 							var ids = ev.target.result;
 							args['uids'] = ids;
-							var res = ipcRenderer.sendSync('search_run', args);
-							if (res) {
-								var text = "Найдено людей: " + res.length;
-								if (res.length != 0) {
-									text += " Результат сохранён в файл result.csv";
-								}
-								$('div.result').empty().text(text);
-								// $('div.result').empty().text(JSON.stringify(res));
-							}
+							ipcRenderer.send('search_run', args);							
 				 		}
 						r.readAsText(f);
 					}
@@ -97,7 +106,7 @@
 			});
 
 			if (!issetUids) {
-				ipcRenderer.sendSync('search_run', args);
+				ipcRenderer.send('search_run', args);
 			}
 
     	});
